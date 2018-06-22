@@ -1,0 +1,35 @@
+{
+  "cheers": [
+    "The upper threshold on my love for you is #ERROR NaN#",
+    "I love you the most user @userID",
+    "Beep Boop",
+    "Thanks to you user @userID, I am the robot that knows love!",
+    "This will forever be in my memory banks under... MESSAGE_@messageID",
+    "The timestamp @date will go down in history!",
+    "Lol so true"
+  ],
+  "swears": [
+    "fuck",
+    "Fuck",
+    "shit",
+    "Shit",
+    "cunt",
+    "Cunt",
+    "bitch",
+    "Bitch",
+    "crap",
+    "Crap",
+    "twat",
+    "Twat",
+    "bastard",
+    "Bastard",
+    "dick",
+    "Dick",
+    "wanker",
+    "Wanker"
+  ],
+  "react_frequency": 0.2,
+  "love_frequency": 0.5,
+  "cheer_frequency": 0.5,
+  "version": 4
+}

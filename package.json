@@ -1,0 +1,11 @@
+{
+  "name": "emotional_support_bot",
+  "version": "1.0.0",
+  "description": "A facebook message bot which provides emotional support",
+  "main": "bot.js",
+  "scripts": {
+    "test": "node bot.js"
+  },
+  "author": "Will Payne",
+  "license": "ISC"
+}

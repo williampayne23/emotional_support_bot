@@ -7,5 +7,8 @@
     "test": "node bot.js"
   },
   "author": "Will Payne",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "facebook-chat-api": "^1.6.0"
+  }
 }

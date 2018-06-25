@@ -1,7 +1,7 @@
 {
   "cheers": [
+  "I love you the most user @userID",
     "The upper threshold on my love for you is #ERROR NaN#",
-    "I love you the most user @userID",
     "Beep Boop",
     "Thanks to you user @userID, I am the robot that knows love!",
     "This will forever be in my memory banks under... MESSAGE_@messageID",
@@ -36,5 +36,6 @@
   "react_frequency": 0.2,
   "love_frequency": 0.5,
   "cheer_frequency": 0.5,
+  "police+swearing" : true,
   "version": 4
 }

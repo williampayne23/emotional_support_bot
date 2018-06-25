@@ -4,7 +4,7 @@ const giphy = require('giphy-api')();
 const swearjar = require('swearjar');
 const download = require('download-file');
 const config = require('./config');
-const logFile = config.logFile;
+const logFile = config.logfile;
 const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
@@ -30,7 +30,7 @@ login(config.credentials, (err, api) => {
       if(bot_id in message.mentions){
         printToLog("Bot mentioned responding");
         respondToMention(message, api);
-      }else if(swearjar.profane(body) || contains(body, bot_data.swears)){
+      }else if((swearjar.profane(body) || contains(body, bot_data.swears)) && bot_data.police_swearing){
         printToLog("Cracking down on swearing")
         api.sendMessage("Language!", message.threadID)
         api.setMessageReaction(":sad:", message.messageID);
@@ -69,8 +69,6 @@ function respondToMention(message, api){
     spam();
   }else if(contains(body, ['stop spam', 'stop echo'])){
     spamBack = "";
-  }else{
-    recallMessage();
   }
 
   function spam(){
@@ -92,9 +90,8 @@ function respondToMention(message, api){
       }else{
         saved_messages.push({body : history[0].body,
                               name : [messageName],
-                              canned : false,
                               threadID : history[0].threadID});
-        fs.writeFile(saved_messages_file, JSON.stringify(saved_messages, null, 2) , 'utf-8');
+        saveMessages();
         api.setMessageReaction(":wow:", history[0].messageID);
         api.sendMessage("Saved under " + messageName, message.threadID);
         printToLog(history[0].body + " saved under " + messageName);
@@ -120,22 +117,21 @@ function respondToMention(message, api){
       }
     }
   }
-
   function deleteMessage(){
     find = getExtraData(message);
     for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].name.indexOf(find) != -1 && !saved_messages[i].canned && saved_messages[i].threadID == message.threadID){
+      if (saved_messages[i].name.indexOf(find) != -1 && saved_messages[i].threadID == message.threadID){
       api.sendMessage("No worries, " + find + " is forgotten", message.threadID);
         saved_messages.splice(i, 1);
       }
     }
-    fs.writeFile(saved_messages_file, JSON.stringify(saved_messages, null, 2) , 'utf-8');
+    saveMessages();
   }
 
   function listMessages(){
     text = "My saved messages:";
     for (var i = 0; i < saved_messages.length; i++) {
-      if (!saved_messages[i].canned && saved_messages[i].threadID == message.threadID){
+      if (saved_messages[i].threadID == message.threadID){
         text = text + "\n" + saved_messages[i].name[0];
       }
     }
@@ -143,9 +139,9 @@ function respondToMention(message, api){
   }
 
   function getRelevantGif(){
-    text = getExtraData(message, ['gif']);
+    text = getExtraData(message);
     printToLog("\t\tSearching with parameters " + text);
-    giphy.search(txt, gifFound);
+    giphy.search(text, gifFound);
     function gifFound(err, res){
       if(res == undefined){
         printToLog("\t\t\tNo gif found :(");
@@ -154,12 +150,12 @@ function respondToMention(message, api){
       }
       var url = res.data[0].images.fixed_width.url;
       download(url, {directory: "./data", filename: "current.gif"}, gifDownloaded);
-    }
-    function gifDownloaded(err){
-        if (err) console.err(err);
-        msg =
-        api.sendMessage({attachment : fs.createReadStream('./data/current.gif')}, message.threadID);
-        printToLog("\t\t\tGif " + res.data[0].title + " sent");
+      function gifDownloaded(err){
+          if (err) console.err(err);
+          msg =
+          api.sendMessage({attachment : fs.createReadStream('./data/current.gif')}, message.threadID);
+          printToLog("\t\t\tGif " + res.data[0].title + " sent");
+      }
     }
   }
 }
@@ -218,6 +214,10 @@ function getSavedMessages(){
   });
 }
 
+function saveMessages(){
+  fs.writeFile(saved_messages_file, JSON.stringify(saved_messages, null, 2) , 'utf-8');
+}
+
 //Removes Tags and command strings to get only the extra data
 function getExtraData(message){
   body = message.body;
@@ -234,7 +234,7 @@ function getExtraData(message){
 //CASE INSENSITIVE
 function replaceAll(str, find, replace) {
     for (var i = 0; i < find.length; i++) {
-      str = str.replace(new RegExp("\ *" + find[i] + "\ *", 'gi'), replace);
+      str = str.replace(new RegExp("\ ?" + find[i] + "\ ?", 'gi'), replace);
     }
     return str;
 }

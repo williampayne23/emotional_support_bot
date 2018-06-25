@@ -4,17 +4,19 @@ const giphy = require('giphy-api')();
 const swearjar = require('swearjar');
 const download = require('download-file');
 const config = require('./config');
-const logFile = '../logs/bots/facebookbot.html';
-const saved_messages_file = 'data/saved_messages.json';
-const saved_data_file = 'data/data.json';
+const logFile = config.logFile;
+const saved_messages_file = config.saved_messages_file;
+const saved_data_file = config.saved_data_file;
+const bot_id = config.bot_user_id;
+
 var bot_data;
 var saved_messages;
-spamBack = "";
+var spamBack = "";
 
 getData();
 getSavedMessages();
 
-login(config, (err, api) => {
+login(config.credentials, (err, api) => {
     if(err) return console.error(err);
     printToLog("Successful login")
     api.setOptions({
@@ -25,7 +27,7 @@ login(config, (err, api) => {
     function listenForMessages(err, message){
       if(err) return console.error(err);
       body = message.body;
-      if('100026855901738' in message.mentions){
+      if(bot_id in message.mentions){
         printToLog("Bot mentioned responding");
         respondToMention(message, api);
       }else if(swearjar.profane(body) || contains(body, bot_data.swears)){
@@ -73,7 +75,7 @@ function respondToMention(message, api){
 
   function spam(){
     for(key in message.mentions){
-      if(key != '100026824793542'){
+      if(key != bot_id){
         spamBack = key;
         printToLog("Spamming back " + key);
       }

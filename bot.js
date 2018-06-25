@@ -4,6 +4,7 @@ const giphy = require('giphy-api')();
 const swearjar = require('swearjar');
 const download = require('download-file');
 const config = require('./config');
+const speechHandler = require("./speechHandler")
 const logFile = config.logfile;
 const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
@@ -16,34 +17,60 @@ var spamBack = "";
 getData();
 getSavedMessages();
 
-login(config.credentials, (err, api) => {
-    if(err) return console.error(err);
-    printToLog("Successful login")
+try {
+  loginState = JSON.parse(fs.readFileSync('appstate.json', 'utf8'));
+  login({appState : loginState}, (err, api) => {
+    if(err){
+      firstLogin();
+    }else{
+      api.setOptions({
+        logLevel: "silent"
+      });
+      printToLog("Logged in to existing session");
+      console.log("Logged in to existing session");
+      loggedIn(err, api);
+    }
+  })
+} catch (e) {
+  firstLogin();
+}
+
+
+
+function firstLogin(){
+  login(config.credentials, (err, api) => {
     api.setOptions({
       logLevel: "silent"
     });
+    fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()));
+    loggedIn(err, api)
+  });
+}
 
-    api.listen(listenForMessages);
-    function listenForMessages(err, message){
-      if(err) return console.error(err);
-      body = message.body;
-      if(bot_id in message.mentions){
-        printToLog("Bot mentioned responding");
-        respondToMention(message, api);
-      }else if((swearjar.profane(body) || contains(body, bot_data.swears)) && bot_data.police_swearing){
-        printToLog("Cracking down on swearing")
-        api.sendMessage("Language!", message.threadID)
-        api.setMessageReaction(":sad:", message.messageID);
-      }else if(message.senderID == spamBack){
-        api.sendMessage(message.body, message.threadID);
-      }else if(Math.random() < bot_data.react_frequency){
-        respondToMessage(message, api);
-      }
+function loggedIn(err, api){
+  if(err) return console.error(err);
+  printToLog("Successful login")
+  api.listen(listenForMessages);
 
-
-      api.markAsRead(message.threadID);
+  function listenForMessages(err, message){
+    if(err) return console.error(err);
+    body = message.body;
+    if(bot_id in message.mentions){
+      printToLog("Bot mentioned responding");
+      respondToMention(message, api);
+    }else if(swearjar.profane(body) && bot_data.police_swearing){
+      printToLog("Cracking down on swearing")
+      api.sendMessage("Language!", message.threadID)
+      api.setMessageReaction(":sad:", message.messageID);
+    }else if(message.senderID == spamBack){
+      api.sendMessage(message.body, message.threadID);
+    }else if(Math.random() < bot_data.react_frequency){
+      respondToMessage(message, api);
     }
-});
+
+    api.markAsRead(message.threadID);
+  }
+}
 
 function respondToMention(message, api){
   body = message.body;
@@ -69,6 +96,12 @@ function respondToMention(message, api){
     spam();
   }else if(contains(body, ['stop spam', 'stop echo'])){
     spamBack = "";
+  }else{
+    text = getExtraData(message);
+    speechHandler(text, function(err, txt){
+      txt = replaceTagsWithActiveData(txt, message);
+      api.sendMessage(txt, message.threadID);
+    });
   }
 
   function spam(){
@@ -169,18 +202,12 @@ function respondToMessage(message, api){
   }
   if(random < bot_data.cheer_frequency){
     printToLog("Sending a cheer!")
-    txt = getRandomCheer(message);
-    api.sendMessage(txt, message.threadID);
+    speechHandler(message.body, function(err, txt){
+      txt = replaceTagsWithActiveData(txt, message);
+      api.sendMessage(txt, message.threadID);
+    });
   }
   api.setMessageReaction(emoji, message.messageID);
-}
-
-function getRandomCheer(message){
-  cheers = bot_data.cheers;
-  random = Math.floor(Math.random() * Math.floor(cheers.length))
-  txt = cheers[random];
-
-  return replaceTagsWithActiveData(txt, message);
 }
 
 function replaceTagsWithActiveData(txt, message){
@@ -189,6 +216,7 @@ function replaceTagsWithActiveData(txt, message){
   date = new Date();
   timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
   txt = txt.replace(/@date/g, timestamp);
+  return txt;
 }
 
 //Tests if a string contains one (or more) of the patterns.

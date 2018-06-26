@@ -74,11 +74,11 @@ function loggedIn(err, api){
 }
 
 function respondToMessage(message, api){
-  random = Math.random()
+  var random = Math.random()
   if(random < bot_data.love_frequency){
-    emoji = ':love:'
+    var emoji = ':love:'
   }else{
-    emoji = ':like:'
+    var emoji = ':like:'
   }
   if(random < bot_data.cheer_frequency){
     printToLog("Sending a cheer!")

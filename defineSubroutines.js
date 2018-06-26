@@ -9,7 +9,6 @@ const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
 
-var bot_data;
 var saved_messages;
 
 getData(function (){});

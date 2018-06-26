@@ -44,6 +44,10 @@ Note that the cheer had the tag <get userId> in it this would be replaced with t
 |userID    |The ID of the user who send the message which is being responded to|
 |messageID |The ID of the message which is being responded to|
 |date      |The current timestamp|
+|threadID  |The threads Ids|
+|threadName|The name of the thread|
+|threadImage|The threads image|
+|threadMessageCount|The message count of the thread|
 
 ##### Rivescript Commands
  Rivescript has a concept called subroutines which lets us attach code to the call tag in rivescript This lets rivescript code like this...

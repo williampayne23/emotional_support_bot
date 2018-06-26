@@ -1,4 +1,10 @@
-+ gif *
+
+
++ * gif *
+- <call>gif <star1> <star2></call>
++ {weight=10}* gif
+- <call>gif <star></call>
++ {weight=10}gif *
 - <call>gif <star></call>
 
 + list

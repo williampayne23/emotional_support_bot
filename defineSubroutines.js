@@ -1,5 +1,6 @@
 "use strict";
 
+const RiveScript = require('rivescript');
 const config = require('./config');
 const fs = require("fs");
 const giphy = require('giphy-api')();
@@ -10,10 +11,7 @@ const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
 
 var saved_messages;
-
-getData(function (){});
 getSavedMessages(function (){});
-
 
 module.exports = function(rs, message, api){
 
@@ -51,6 +49,7 @@ module.exports = function(rs, message, api){
   }
 
   function updateFiles(callback){
+    rs = new RiveScript();
     rs.loadDirectory("brain", loadingDone, loadingError);
     function loadingDone(batchnum){
       rs.sortReplies();
@@ -73,7 +72,7 @@ module.exports = function(rs, message, api){
           printToLog("\t\t\tNo gif found :(");
           resolve("I can't find any. I am a bad bot :(");
         }
-        var random = Math.floor(Math.random() * res.data.length);
+        var random = Math.floor(Math.random() * Math.min(res.data.length, 5));
         var randomGif = res.data[random];
         var url = randomGif.images.fixed_width.url;
         download(url, {directory: "./data", filename: "current.gif"}, gifDownloaded);

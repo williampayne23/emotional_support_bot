@@ -55,7 +55,12 @@ function loggedIn(err, api){
   function listenForMessages(err, message){
     if(err) return console.error(err);
     body = message.body;
-    if(bot_id in message.mentions){
+    if(!message.isGroup){
+      speechHandler(message.body, function(err, txt){
+        txt = replaceTagsWithActiveData(txt, message);
+        api.sendMessage(txt, message.threadID);
+      });
+    }else if(bot_id in message.mentions){
       printToLog("Bot mentioned responding");
       respondToMention(message, api);
     }else if(swearjar.profane(body) && bot_data.police_swearing){

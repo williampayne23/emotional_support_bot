@@ -5,7 +5,7 @@ var doneLoading = false;
 var rs = new RiveScript();
 updateFiles();
 
-module.exports = function(message, api){
+module.exports = async function(message, api){
 
   defineSubroutines(rs, message, api);
   rs.setSubroutine("reverse", function(rs, args){
@@ -15,10 +15,11 @@ module.exports = function(message, api){
 
   if(doneLoading){
     var text = stripMentions(rs, message);
-    rs.replyAsync("local-user", text).then((reply) => {
+    addVars(rs, message)
+    rs.replyAsync("local-user", text)
+    .then((reply) => {
       //Some subroutines have to wait for promises and callbacks so they'll send the message themselves, we don't want to send two messages so they'll output NOMESSAGE and we can look for that and not send a message in that case.
       if(!/NOMESSAGE/.test(reply)){
-        reply = replaceTagsWithActiveData(reply, message);
         api.sendMessage(reply, message.threadID);
       }
     });
@@ -27,15 +28,15 @@ module.exports = function(message, api){
   }
 }
 
-
-
-function replaceTagsWithActiveData(txt, message){
-  txt = txt.replace(/@userID/g, message.senderID);
-  txt = txt.replace(/@messageID/g, message.messageID);
+function addVars(rs, message){
   var date = new Date();
   var timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
-  txt = txt.replace(/@date/g, timestamp);
-  return txt;
+  var vars = {
+    'userID' : message.senderID,
+    'messageID' : message.messageID,
+    'date' : timestamp
+  }
+  rs.setUservars('local-user', vars);
 }
 
 function stripMentions(rs, message){

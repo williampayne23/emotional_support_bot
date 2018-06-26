@@ -3,15 +3,14 @@
 const RiveScript = require('rivescript');
 const config = require('./config');
 const fs = require("fs");
-const giphy = require('giphy-api')();
-const download = require('download-file');
+const axios = require('axios');
 const logFile = config.logfile;
 const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
 
 var saved_messages;
-getSavedMessages(function (){});
+getSavedMessages();
 
 module.exports = function(rs, message, api){
 
@@ -36,53 +35,46 @@ module.exports = function(rs, message, api){
   function update(rs, args){
     return new rs.Promise(function (resolve, reject) {
       var i = 0;
-      updateFiles(callback);
-      getSavedMessages(callback);
-      getData(callback);
-      function callback(){
-        i++;
-        if(i>=3){
-          resolve("Update sucessful!");
-        }
+      updateFiles()
+      .then(getSavedMessages)
+      .then(getData)
+      .then(() => resolve("Updated!"))
+      .catch(err => console.error(err));
+    });
+  }
+
+  function updateFiles(){
+    return new Promise(function (resolve, reject) {
+      rs = new RiveScript();
+      rs.loadDirectory("brain", loadingDone, loadingError);
+      function loadingDone(batchnum){
+        rs.sortReplies();
+        printToLog("Updating rive files")
+        resolve();
+      }
+      function loadingError(err){
+        console.error(err);
+        reject();
       }
     });
   }
 
-  function updateFiles(callback){
-    rs = new RiveScript();
-    rs.loadDirectory("brain", loadingDone, loadingError);
-    function loadingDone(batchnum){
-      rs.sortReplies();
-      printToLog("Updating rive files")
-      callback();
-    }
-    function loadingError(err){
-      console.error(err);
-    }
-  }
-
   function getRelevantGif(rs, args){
-    console.log("Getting relevant gif")
     return new rs.Promise(function (resolve, reject) {
-      var text = args.join(" ");
+      var text = args.join("+");
+      var giphy_api = "https://api.giphy.com/v1/gifs/search"
+      giphy_api = giphy_api + "?api_key=" + config.giphy_api_key + "&q=" + text;
       printToLog("\t\tSearching with parameters " + text);
-      giphy.search(text, gifFound);
-      function gifFound(err, res){
-        if(res == undefined){
-          printToLog("\t\t\tNo gif found :(");
-          resolve("I can't find any. I am a bad bot :(");
-        }
-        var random = Math.floor(Math.random() * Math.min(res.data.length, 5));
-        var randomGif = res.data[random];
-        var url = randomGif.images.fixed_width.url;
-        download(url, {directory: "./data", filename: "current.gif"}, gifDownloaded);
-        function gifDownloaded(err){
-            if (err) console.err(err);
-            api.sendMessage({attachment : fs.createReadStream('./data/current.gif')}, message.threadID);
-            printToLog("\t\t\tGif " + randomGif.title + " sent");
-            resolve("NOMESSAGE");
-        }
-      }
+      axios.get(giphy_api).then(res => {
+        var random = Math.floor(Math.random() * Math.min(res.data.data.length, 5));
+        var randomGif = res.data.data[random];
+        var gifUrl = randomGif.images.fixed_width.url;
+        return axios({method:'get', url: gifUrl, responseType:'stream'})
+      })
+      .then(function(response){
+        api.sendMessage({attachment : response.data}, message.threadID);
+      })
+      .catch(err => console.error(err))
     });
   }
 
@@ -90,19 +82,17 @@ module.exports = function(rs, message, api){
     return new rs.Promise(function (resolve, reject) {
       var timestamp = message.timestamp;
       api.getThreadHistory(message.threadID, 2, timestamp,(err, history) => {
-
-        console.log(history);
-        history.pop();
+        saveMessage = history[1];
         var messageName = args.join(" ");
         if(nameTaken(messageName)){
           resolve("Sorry that name is taken!");
         }else{
-          saved_messages.push({body : history[0].body,
+          saved_messages.push({body : saveMessage.body,
                                 name : [messageName],
-                                threadID : history[0].threadID});
+                                threadID : saveMessage.threadID});
           saveMessages();
-          api.setMessageReaction(":wow:", history[0].messageID);
-          printToLog(history[0].body + " saved under " + messageName);
+          api.setMessageReaction(":wow:", saveMessage.messageID);
+          printToLog(saveMessage.body + " saved under " + messageName);
           resolve("Saved under " + messageName);
         }
       });
@@ -155,19 +145,23 @@ module.exports = function(rs, message, api){
 
 //Gets data saved in a JSON file
 function getData(callback){
+  return new Promise(function (resolve, reject) {
   fs.readFile(saved_data_file, "utf8", function(err, data) {
     bot_data = JSON.parse(data);
     printToLog("Updating options from JSON file, now on version " + bot_data.version)
-    callback();
+    resolve();
   });
+});
 }
 
 //Gets messages saved in a JSON file
-function getSavedMessages(callback){
-  fs.readFile(saved_messages_file, "utf8", function(err, data) {
-    saved_messages = JSON.parse(data);
-    printToLog("Updating messages from JSON file")
-    callback();
+function getSavedMessages(){
+  return new Promise(function (resolve, reject) {
+    fs.readFile(saved_messages_file, "utf8", function(err, data) {
+      saved_messages = JSON.parse(data);
+      printToLog("Updating messages from JSON file")
+      resolve();
+    });
   });
 }
 //Saves messages to file

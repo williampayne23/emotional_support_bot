@@ -9,7 +9,7 @@
   "author": "Will Payne",
   "license": "ISC",
   "dependencies": {
-    "download-file": "^0.1.5",
+    "axios": "^0.18.0",
     "facebook-chat-api": "^1.6.0",
     "rivescript": "^2.0.0-alpha.4",
     "swearjar": "^0.2.0"

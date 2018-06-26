@@ -15,6 +15,7 @@ getSavedMessages();
 module.exports = function(rs, message, api){
 
   rs.setSubroutine('spam', spam);
+  rs.setSubroutine('stopSpam', stopSpam);
   rs.setSubroutine('update', update);
   rs.setSubroutine('gif', getRelevantGif);
   rs.setSubroutine('save', saveMessage);
@@ -30,6 +31,10 @@ module.exports = function(rs, message, api){
         global.spamBack = mentions[i];
       }
     }
+  }
+
+  function stopSpam(){
+    global.spamBack = "";
   }
 
   function update(rs, args){

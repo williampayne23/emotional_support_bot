@@ -24,3 +24,6 @@
 
 + spam
 - <call>spam</call>
+
++ stop spam
+- <call>stopSpam</call>

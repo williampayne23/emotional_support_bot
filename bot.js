@@ -1,44 +1,40 @@
+"use strict";
+
 const login = require("facebook-chat-api");
 const fs = require("fs");
-const giphy = require('giphy-api')();
 const swearjar = require('swearjar');
-const download = require('download-file');
 const config = require('./config');
 const speechHandler = require("./speechHandler")
 const logFile = config.logfile;
-const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
 
-var bot_data;
-var saved_messages;
-var spamBack = "";
+global.bot_data = {};
+global.spamBack = "";
 
 getData();
-getSavedMessages();
+attemptLogin();
 
-try {
-  loginState = JSON.parse(fs.readFileSync('appstate.json', 'utf8'));
-  login({appState : loginState}, (err, api) => {
-    if(err){
-      firstLogin();
-    }else{
-      api.setOptions({
-        logLevel: "silent"
-      });
-      printToLog("Logged in to existing session");
-      console.log("Logged in to existing session");
-      loggedIn(err, api);
-    }
-  })
-} catch (e) {
-  firstLogin();
+function attemptLogin(){
+  try {
+    var loginState = JSON.parse(fs.readFileSync('appstate.json', 'utf8'));
+    login({appState : loginState}, (err, api) => {
+      if(err){
+        throw err;
+      }else{
+        printToLog("Logged in to existing session");
+        console.log("Logged in to existing session");
+        loggedIn(err, api);
+      }
+    })
+  } catch (e) {
+    firstLogin();
+  }
 }
-
-
 
 function firstLogin(){
   login(config.credentials, (err, api) => {
+    if (err) console.error(err);
     api.setOptions({
       logLevel: "silent"
     });
@@ -49,20 +45,21 @@ function firstLogin(){
 
 function loggedIn(err, api){
   if(err) return console.error(err);
+  api.setOptions({
+    logLevel: "silent"
+  });
   printToLog("Successful login")
   api.listen(listenForMessages);
 
   function listenForMessages(err, message){
     if(err) return console.error(err);
-    body = message.body;
+
+    var body = message.body;
     if(!message.isGroup){
-      speechHandler(message.body, function(err, txt){
-        txt = replaceTagsWithActiveData(txt, message);
-        api.sendMessage(txt, message.threadID);
-      });
+      speechHandler(message, api)
     }else if(bot_id in message.mentions){
       printToLog("Bot mentioned responding");
-      respondToMention(message, api);
+      speechHandler(message, api);
     }else if(swearjar.profane(body) && bot_data.police_swearing){
       printToLog("Cracking down on swearing")
       api.sendMessage("Language!", message.threadID)
@@ -72,129 +69,7 @@ function loggedIn(err, api){
     }else if(Math.random() < bot_data.react_frequency){
       respondToMessage(message, api);
     }
-
     api.markAsRead(message.threadID);
-  }
-}
-
-function respondToMention(message, api){
-  body = message.body;
-  if(contains(body, ['gif'])){
-    printToLog("Responding to gif request...");
-    getRelevantGif(message);
-  }else if(contains(body, ['save'])){
-    printToLog("Saving a message for later");
-    saveMessage();
-  }else if(contains(body, ['remember'])){
-    printToLog("Recalling a message from earlier")
-    recallMessage();
-  }else if(contains(body, ['delete'])){
-    printToLog("Deleting a message from earlier")
-    deleteMessage();
-  }else if(contains(body, ['list'])){
-    printToLog("Listing saved messages")
-    listMessages();
-  }else if(contains(body, ['update'])){
-    getData();
-    getSavedMessages();
-  }else if(contains(body, ['spam', 'echo'])){
-    spam();
-  }else if(contains(body, ['stop spam', 'stop echo'])){
-    spamBack = "";
-  }else{
-    text = getExtraData(message);
-    speechHandler(text, function(err, txt){
-      txt = replaceTagsWithActiveData(txt, message);
-      api.sendMessage(txt, message.threadID);
-    });
-  }
-
-  function spam(){
-    for(key in message.mentions){
-      if(key != bot_id){
-        spamBack = key;
-        printToLog("Spamming back " + key);
-      }
-    }
-  }
-
-  function saveMessage(){
-    timestamp = undefined;
-    api.getThreadHistory(message.threadID, 2, timestamp,(err, history) => {
-      history.pop();
-      messageName = getExtraData(message);
-      if(nameTaken(messageName)){
-        api.sendMessage("Sorry that name is taken!");
-      }else{
-        saved_messages.push({body : history[0].body,
-                              name : [messageName],
-                              threadID : history[0].threadID});
-        saveMessages();
-        api.setMessageReaction(":wow:", history[0].messageID);
-        api.sendMessage("Saved under " + messageName, message.threadID);
-        printToLog(history[0].body + " saved under " + messageName);
-      }
-    });
-  }
-
-  function nameTaken(messageName){
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].name.indexOf(messageName) != -1){
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function recallMessage(){
-    find = getExtraData(message);
-    for (var i = 0; i < saved_messages.length; i++) {
-      if( saved_messages[i].name.indexOf(find) != -1 && saved_messages[i].threadID == message.threadID){
-        api.sendMessage(saved_messages[i].body, message.threadID);
-        printToLog("Message found");
-      }
-    }
-  }
-  function deleteMessage(){
-    find = getExtraData(message);
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].name.indexOf(find) != -1 && saved_messages[i].threadID == message.threadID){
-      api.sendMessage("No worries, " + find + " is forgotten", message.threadID);
-        saved_messages.splice(i, 1);
-      }
-    }
-    saveMessages();
-  }
-
-  function listMessages(){
-    text = "My saved messages:";
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].threadID == message.threadID){
-        text = text + "\n" + saved_messages[i].name[0];
-      }
-    }
-    api.sendMessage(text, message.threadID);
-  }
-
-  function getRelevantGif(){
-    text = getExtraData(message);
-    printToLog("\t\tSearching with parameters " + text);
-    giphy.search(text, gifFound);
-    function gifFound(err, res){
-      if(res == undefined){
-        printToLog("\t\t\tNo gif found :(");
-        api.sendMessage("I can't find any. I am a bad bot :(", message.threadID);
-        return;
-      }
-      var url = res.data[0].images.fixed_width.url;
-      download(url, {directory: "./data", filename: "current.gif"}, gifDownloaded);
-      function gifDownloaded(err){
-          if (err) console.err(err);
-          msg =
-          api.sendMessage({attachment : fs.createReadStream('./data/current.gif')}, message.threadID);
-          printToLog("\t\t\tGif " + res.data[0].title + " sent");
-      }
-    }
   }
 }
 
@@ -207,28 +82,9 @@ function respondToMessage(message, api){
   }
   if(random < bot_data.cheer_frequency){
     printToLog("Sending a cheer!")
-    speechHandler(message.body, function(err, txt){
-      txt = replaceTagsWithActiveData(txt, message);
-      api.sendMessage(txt, message.threadID);
-    });
+    speechHandler(message, api);
   }
   api.setMessageReaction(emoji, message.messageID);
-}
-
-function replaceTagsWithActiveData(txt, message){
-  txt = txt.replace(/@userID/g, message.senderID);
-  txt = txt.replace(/@messageID/g, message.messageID);
-  date = new Date();
-  timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
-  txt = txt.replace(/@date/g, timestamp);
-  return txt;
-}
-
-//Tests if a string contains one (or more) of the patterns.
-//CASE INSENSITIVE
-function contains(testString, pattern){
-    regex = new RegExp(pattern.join('|'), 'i');
-    return regex.test(testString);
 }
 
 //Gets data saved in a JSON file
@@ -239,43 +95,10 @@ function getData(){
   });
 }
 
-//Gets messages saved in a JSON file
-function getSavedMessages(){
-  fs.readFile(saved_messages_file, "utf8", function(err, data) {
-    saved_messages = JSON.parse(data);
-    printToLog("Updating messages from JSON file")
-  });
-}
-
-function saveMessages(){
-  fs.writeFile(saved_messages_file, JSON.stringify(saved_messages, null, 2) , 'utf-8');
-}
-
-//Removes Tags and command strings to get only the extra data
-function getExtraData(message){
-  body = message.body;
-  body = replaceAll(body, ['gif', 'save', 'remember', 'delete', 'list', 'update'], "");
-
-  for(key in message.mentions){
-    body =  body.replace(message.mentions[key], "");
-  }
-
-  return body;
-}
-
-//Replaces strings in list find with string replace
-//CASE INSENSITIVE
-function replaceAll(str, find, replace) {
-    for (var i = 0; i < find.length; i++) {
-      str = str.replace(new RegExp("\ ?" + find[i] + "\ ?", 'gi'), replace);
-    }
-    return str;
-}
-
 //Prints to logfile
 function printToLog(txt){
-  date = new Date();
-  timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
-  string = "\n<li>" + timestamp + ": " + txt + "</li>" + "\n";
+  var date = new Date();
+  var timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
+  var string = "\n<li>" + timestamp + ": " + txt + "</li>" + "\n";
   fs.appendFile(logFile, string);
 }

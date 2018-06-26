@@ -1,0 +1,20 @@
++ gif *
+- <call>gif <star></call>
+
++ list
+- <call>list</call>
+
++ save *
+- <call>save <star></call>
+
++ remember *
+- <call>recall <star></call>
+
++ delete *
+- <call>delete <star></call>
+
++ update
+- <call>update</call>
+
++ spam
+- <call>spam</call>

@@ -5,7 +5,7 @@ var doneLoading = false;
 var rs = new RiveScript();
 updateFiles();
 
-module.exports = async function(message, api){
+module.exports = function(message, api){
 
   defineSubroutines(rs, message, api);
   rs.setSubroutine("reverse", function(rs, args){
@@ -16,27 +16,36 @@ module.exports = async function(message, api){
   if(doneLoading){
     var text = stripMentions(rs, message);
     addVars(rs, message)
-    rs.replyAsync("local-user", text)
+    .then(() => rs.replyAsync("local-user", text))
     .then((reply) => {
       //Some subroutines have to wait for promises and callbacks so they'll send the message themselves, we don't want to send two messages so they'll output NOMESSAGE and we can look for that and not send a message in that case.
       if(!/NOMESSAGE/.test(reply)){
         api.sendMessage(reply, message.threadID);
       }
-    });
+    })
+    .catch(err => console.error(err));
   }else{
     api.sendMessage("I'm sorry I've forgotten how to talk", message.threadID);
   }
-}
 
-function addVars(rs, message){
-  var date = new Date();
-  var timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
-  var vars = {
-    'userID' : message.senderID,
-    'messageID' : message.messageID,
-    'date' : timestamp
+  function addVars(rs, message){
+    return new Promise((resolve, reject) => api.getThreadInfo(message.threadID, (err, threadInfo) => {
+      if(err) reject(err);
+      var date = new Date();
+      var timestamp = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+      var vars = {
+        'userID'            : message.senderID,
+        'messageID'         : message.messageID,
+        'threadID'          : message.threadID,
+        'threadName'        : threadInfo.name,
+        'threadMessageCount': threadInfo.messageCount,
+        'threadImage'       : threadInfo.imageSrc,
+        'date'              : timestamp
+      }
+      rs.setUservars('local-user', vars);
+      resolve();
+    }));
   }
-  rs.setUservars('local-user', vars);
 }
 
 function stripMentions(rs, message){

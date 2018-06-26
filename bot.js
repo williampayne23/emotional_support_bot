@@ -1,5 +1,3 @@
-"use strict";
-
 const login = require("facebook-chat-api");
 const fs = require("fs");
 const swearjar = require('swearjar');
@@ -53,7 +51,6 @@ function loggedIn(err, api){
 
   function listenForMessages(err, message){
     if(err) return console.error(err);
-
     var body = message.body;
     if(!message.isGroup){
       speechHandler(message, api)

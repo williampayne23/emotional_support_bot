@@ -8,17 +8,13 @@ updateFiles();
 module.exports = function(message, api){
 
   defineSubroutines(rs, message, api);
-  rs.setSubroutine("reverse", function(rs, args){
-    return args.join(" ").split("").reverse().join("");
-  })
-
 
   if(doneLoading){
     var text = stripMentions(rs, message);
     addVars(rs, message)
     .then(() => rs.replyAsync("local-user", text))
     .then((reply) => {
-      //Some subroutines have to wait for promises and callbacks so they'll send the message themselves, we don't want to send two messages so they'll output NOMESSAGE and we can look for that and not send a message in that case.
+      //Some subroutines send their own messages so the return NOMESSAGE so we know not to send one here.
       if(!/NOMESSAGE/.test(reply)){
         api.sendMessage(reply, message.threadID);
       }

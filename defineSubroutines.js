@@ -76,9 +76,7 @@ module.exports = function(rs, message, api){
         var gifUrl = randomGif.images.fixed_width.url;
         return axios({method:'get', url: gifUrl, responseType:'stream'})
       })
-      .then(function(response){
-        api.sendMessage({attachment : response.data}, message.threadID);
-      })
+      .then(response => api.sendMessage({attachment : response.data}, message.threadID))
       .catch(err => console.error(err))
     });
   }

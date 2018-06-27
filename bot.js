@@ -15,6 +15,7 @@ attemptLogin();
 
 function attemptLogin(){
   try {
+    //First try to log in with the saved state
     var loginState = JSON.parse(fs.readFileSync('appstate.json', 'utf8'));
     login({appState : loginState}, (err, api) => {
       if(err){
@@ -26,6 +27,7 @@ function attemptLogin(){
       }
     })
   } catch (e) {
+    //If saved state login doesn't work first login will make a saved state for next time
     firstLogin();
   }
 }

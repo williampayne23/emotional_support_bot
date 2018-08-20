@@ -1,7 +1,7 @@
 {
-  "react_frequency": 0.2,
-  "love_frequency": 0.5,
-  "cheer_frequency": 0.5,
+  "react_frequency": 0.05,
+  "love_frequency": 0.2,
+  "cheer_frequency": 0.1,
   "police_swearing" : true,
   "version": 5
 }

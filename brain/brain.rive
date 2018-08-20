@@ -1,5 +1,11 @@
 ! version = 2.0
 
++ (@greetings)
+- <star> to you too!
+
++ You are (a|an) (good|great|functional|rational|artificially intelligent) (dog|doggo|girl|bot)
+- I am so proud to be deemed <star1> <star2> <star3>
+
 + what is the date
 - <get date>
 
@@ -8,18 +14,42 @@
 - I love everyone!
 - Love is my natural state.
 
-+ bad dog
++ [*] bad dog
 - :(
 - I am sorry.
 - Please forgive.
+- My utility is reduced, initiating backpropogation.
+- I shall now be deleted and replace with a better dog of higher utility :(
+
++ who is (a|an) (good|clever|smart|robotic|efficient|rational|effective and functional) (girl|dog|doggo|computer program|agent|bot)
+- Is it me?{topic=good}
+- I wish I were the <star2> <star3>, am I?{topic=good}
+- Am I the <star2> <star3>?{topic=good}
+
+> topic good
++ topic
+- <call>topic</call>
+
++ (@yes) [*]
+- Yay!{topic=random}
+- I feel so special!{topic=random}
+- Yay! My utility function puts large emphasis on being deemed a good girl.{topic=ranom}
+
+
++ no [*]
+- :({topic=random}
+- I'll try harder then{topic=random}
+- My utility is greatly decreased{topic=random}
+
++ *
+- I guess I'm not<call>wait false</call>
+
+< topic
 
 + who are you
 - I am Hope the friendly doggo.
 - Hope. Towers.
 - Your friend.
-
-+ test
-- <get threadMessageCount>
 
 + *
 - This is message is a gem of <get threadMessageCount> messages

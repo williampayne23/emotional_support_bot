@@ -161,4 +161,5 @@
 ! array measure    = inch in centimeter cm millimeter mm meter m inches centimeters millimeters meters
 ! array yes        = yes yeah yep yup ya yea
 ! array no         = no nah nope nay
-! array people     = me her him youself
+! array people     = me she he i her him youself
+! array greetings  = hi hello greetings salutations bonjour chao

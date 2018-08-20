@@ -10,6 +10,7 @@ module.exports = function(message, api){
   defineSubroutines(rs, message, api);
 
   if(doneLoading){
+    var previousTopic = rs.getUservar('local-user','topic')
     var text = stripMentions(rs, message);
     addVars(rs, message)
     .then(() => rs.replyAsync("local-user", text))
@@ -18,6 +19,22 @@ module.exports = function(message, api){
       if(!/NOMESSAGE/.test(reply)){
         api.sendMessage(reply, message.threadID);
       }
+      //When a topic is opened wait for a response
+      if(rs.getUservar('local-user','topic') != 'random' && previousTopic=='random'){
+        if(global.waitingforresponse.indexOf(message.threadID)>-1){
+        }else{
+          global.waitingforresponse.push(message.threadID);
+        }
+      }
+      //When a topic is closed stop waiting for a response
+      if(rs.getUservar('local-user','topic') == 'random' && previousTopic!='random'){
+        var index = global.waitingforresponse.indexOf(message.threadID);
+        if(index > -1){
+          global.waitingforresponse.splice(index, 1);
+        }
+      }
+
+
     })
     .catch(err => console.error(err));
   }else{

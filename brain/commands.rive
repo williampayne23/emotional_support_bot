@@ -1,11 +1,12 @@
-
-
 + * gif *
 - <call>gif <star1> <star2></call>
 + {weight=10}* gif
 - <call>gif <star></call>
 + {weight=10}gif *
 - <call>gif <star></call>
+
++ topic
+- <call>topic</call>
 
 + list
 - <call>list</call>
@@ -27,3 +28,21 @@
 
 + stop spam
 - <call>stopSpam</call>
+
++ let us (chat|talk|discuss things)
+- <call>wait true</call>
+
++ listen
+- <call>wait true</call>
+
++ let us stop (chatting|talking|discussing)
+- <call>wait false</call>
+
++ shush now
+- <call>wait false</call>
+
++ stop listening
+- <call>wait false</call>
+
++ who
+- <call>waitwho</call>

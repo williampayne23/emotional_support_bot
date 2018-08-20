@@ -22,6 +22,35 @@ module.exports = function(rs, message, api){
   rs.setSubroutine('recall', recallMessage);
   rs.setSubroutine('delete', deleteMessage);
   rs.setSubroutine('list', listMessages);
+  rs.setSubroutine('wait', waitForResponse);
+  rs.setSubroutine('waitwho', whoAreYouWaitingFor);
+  rs.setSubroutine('topic', topic);
+
+  function topic(){
+    return rs.getUservar('local-user','topic');
+  }
+
+  function waitForResponse(rs, args){
+    if(args[0] == "true"){
+      if(global.waitingforresponse.indexOf(message.threadID)>-1){
+      }else{
+        global.waitingforresponse.push(message.threadID);
+      }
+    }else{
+      var index = global.waitingforresponse.indexOf(message.threadID);
+      if(index > -1){
+        global.waitingforresponse.splice(index, 1);
+      }
+    }
+  }
+
+  function whoAreYouWaitingFor(){
+    var text = "Threads I'm waiting for:"
+    for (var i =0; i< global.waitingforresponse.length; i++) {
+        text = text+"\n"+global.waitingforresponse[i];
+    }
+    return text;
+  }
 
   function spam(rs, args){
     var mentions = rs.getUservar('local-user', 'mentions').split(" ");

@@ -9,6 +9,7 @@ const bot_id = config.bot_user_id;
 
 global.bot_data = {};
 global.spamBack = "";
+global.waitingforresponse = [];
 
 getData();
 attemptLogin();
@@ -54,7 +55,8 @@ function loggedIn(err, api){
   function listenForMessages(err, message){
     if(err) return console.error(err);
     var body = message.body;
-    if(!message.isGroup){
+    var thread = message.threadID
+    if(!message.isGroup || global.waitingforresponse.indexOf(message.threadID)>-1){
       speechHandler(message, api)
     }else if(bot_id in message.mentions){
       printToLog("Bot mentioned responding");

@@ -12,7 +12,10 @@
     "axios": "^0.18.0",
     "facebook-chat-api": "^1.6.0",
     "rivescript": "^2.0.0-alpha.4",
+    "sqlite3": "^4.0.2",
     "swearjar": "^0.2.0"
   },
-  "watch" : ["brain"]
+  "watch": [
+    "brain"
+  ]
 }

@@ -1,10 +1,21 @@
 ! version = 2.0
 
 + (@greetings)
-- <star> to you too!
+- <sentence> to you too!
 
-+ You are (a|an) (good|great|functional|rational|artificially intelligent) (dog|doggo|girl|bot)
-- I am so proud to be deemed <star1> <star2> <star3>
++ knock knock
+- Who's there?<call>wait true</call>
+
++ *
+% who is there
+- <star> who!?
+
++ *
+% * who
+- LOL! <star>! That's funny!<call>wait false</call>
+- You're so funny!<call>wait false</call>
+- Hilarious!<call>wait false</call>
+- Comedy cicuits overwhelmed.<call>wait false</call>
 
 + what is the date
 - <get date>
@@ -14,17 +25,26 @@
 - I love everyone!
 - Love is my natural state.
 
-+ [*] bad dog
++ [*] (dumb|bad|stupid) (@bot)
 - :(
 - I am sorry.
 - Please forgive.
 - My utility is reduced, initiating backpropogation.
 - I shall now be deleted and replace with a better dog of higher utility :(
 
-+ who is (a|an) (good|clever|smart|robotic|efficient|rational|effective and functional) (girl|dog|doggo|computer program|agent|bot)
++ you are (a|an) (@compliments) (@bot)
+- I am so proud to be deemed <star1> <star2> <star3>
+
++ who is (a|an) (@compliments) (@bot)
 - Is it me?{topic=good}
 - I wish I were the <star2> <star3>, am I?{topic=good}
 - Am I the <star2> <star3>?{topic=good}
+
++ [*] good (@bot) [*]
+- I am so happy to have done well at being doggo!
+- My utility funtion states that I should optimise good dogness
+- I am happy to have maximised this evaluation
+- :)
 
 > topic good
 + topic
@@ -33,7 +53,7 @@
 + (@yes) [*]
 - Yay!{topic=random}
 - I feel so special!{topic=random}
-- Yay! My utility function puts large emphasis on being deemed a good girl.{topic=ranom}
+- Yay! My utility function puts large emphasis on this.{topic=ranom}
 
 
 + no [*]
@@ -56,7 +76,7 @@
 - I love you the most user <get userID>
 - The upper threshold on my love for you is #ERROR NaN#
 - Beep Boop
-- Thanks to you user @userID, I am the robot that knows love!
+- Thanks to you user <get userID>, I am the robot that knows love!
 - This will forever be in my memory banks under... <get messageID>
 - The timestamp <get date> will go down in history!
 - Lol so true
@@ -64,4 +84,4 @@
 - <3<3<3<3
 - XD
 - Beep... Boop...
-- What am I
+- What am I?

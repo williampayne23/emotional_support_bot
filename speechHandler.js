@@ -10,27 +10,36 @@ module.exports = function(message, api){
   defineSubroutines(rs, message, api);
 
   if(doneLoading){
-    var previousTopic = rs.getUservar('local-user','topic')
+    var previousTopic = rs.getUservar(message.threadID,'topic')
+    if(previousTopic == 'undefined'){
+      previousTopic = 'random';
+    }
     var text = stripMentions(rs, message);
     addVars(rs, message)
-    .then(() => rs.replyAsync("local-user", text))
+    .then(() => rs.replyAsync(message.threadID, text))
     .then((reply) => {
       //Some subroutines send their own messages so the return NOMESSAGE so we know not to send one here.
       if(!/NOMESSAGE/.test(reply)){
         api.sendMessage(reply, message.threadID);
       }
       //When a topic is opened wait for a response
-      if(rs.getUservar('local-user','topic') != 'random' && previousTopic=='random'){
-        if(global.waitingforresponse.indexOf(message.threadID)>-1){
-        }else{
+      var topic = rs.getUservar(message.threadID,'topic');
+      if(topic != 'random' && previousTopic=='random'){
+        if(global.waitingforresponse.indexOf(message.threadID)<=-1){
           global.waitingforresponse.push(message.threadID);
+          console.log(previousTopic)
+          console.log("Waiting for response");
+          console.log(topic)
         }
       }
       //When a topic is closed stop waiting for a response
-      if(rs.getUservar('local-user','topic') == 'random' && previousTopic!='random'){
+      if(rs.getUservar(message.threadID,'topic') == 'random' && previousTopic!='random'){
         var index = global.waitingforresponse.indexOf(message.threadID);
         if(index > -1){
           global.waitingforresponse.splice(index, 1);
+          console.log(previousTopic)
+          console.log("Stopped waiting for response");
+          console.log(topic)
         }
       }
 
@@ -55,7 +64,7 @@ module.exports = function(message, api){
         'threadImage'       : threadInfo.imageSrc,
         'date'              : timestamp
       }
-      rs.setUservars('local-user', vars);
+      rs.setUservars(message.threadID, vars);
       resolve();
     }));
   }
@@ -68,7 +77,7 @@ function stripMentions(rs, message){
     body =  body.replace(message.mentions[key], "");
     list = list + key + " ";
   }
-  rs.setUservar('local-user', 'mentions', list);
+  rs.setUservar(message.threadID, 'mentions', list);
   return body;
 }
 

@@ -44,5 +44,11 @@
 + stop listening
 - <call>wait false</call>
 
-+ who
++ waitlist{weight=10}
 - <call>waitwho</call>
+
++ what is the (funny|life|love|students) [quote] [of the day]
+- <call>quote <star1></call>
+
++ what is the inspirational [quote] [of the day]
+- <call>quote inspire</call>

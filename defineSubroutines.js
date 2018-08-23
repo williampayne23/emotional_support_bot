@@ -25,9 +25,27 @@ module.exports = function(rs, message, api){
   rs.setSubroutine('wait', waitForResponse);
   rs.setSubroutine('waitwho', whoAreYouWaitingFor);
   rs.setSubroutine('topic', topic);
+  rs.setSubroutine('quote', quote);
+
+  function quote(rs, args){
+    var url="https://quotes.rest/qod?category=" + args[0];
+    return new rs.Promise(function(resolve, reject) {
+      axios.get(url).then(res => {
+      quote = res.data.contents.quotes[0]
+      resolve(quote.quote + "\n-" + quote.author)
+    }).catch(err => {
+      if (err == 'Error: Request failed with status code 429') {
+        resolve("I'm sorry I can only find 10 quotes per hour because the people who made the quote API are not good doggos and won't share freely :(")
+      }else{
+        printToLog("ERROR FINDING QUOTE: " +err);
+        resolve("Oh dears I am very confused sombody should probably check my log");
+      }
+    });
+  });
+  }
 
   function topic(){
-    return rs.getUservar('local-user','topic');
+    return rs.getUservar(message.threadID,'topic');
   }
 
   function waitForResponse(rs, args){

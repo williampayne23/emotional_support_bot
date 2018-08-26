@@ -50,5 +50,12 @@
 + what is the (funny|life|love|students) [quote] [of the day]
 - <call>quote <star1></call>
 
++ what are the quotes of the day
+- Funny : <call>quote funny</call>\n\n
+^ Life : <call>quote life</call>\n\n
+^ Love : <call>quote love</call>\n\n
+^ Students : <call>quote students</call>\n\n
+^ Inspirational : <call>quote inspire</call>
+
 + what is the inspirational [quote] [of the day]
 - <call>quote inspire</call>

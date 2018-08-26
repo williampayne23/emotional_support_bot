@@ -2,6 +2,7 @@
 
 const RiveScript = require('rivescript');
 const config = require('./config');
+const db = require("./db");
 const fs = require("fs");
 const axios = require('axios');
 const logFile = config.logfile;
@@ -9,8 +10,6 @@ const saved_messages_file = config.saved_messages_file;
 const saved_data_file = config.saved_data_file;
 const bot_id = config.bot_user_id;
 
-var saved_messages;
-getSavedMessages();
 
 module.exports = function(rs, message, api){
 
@@ -88,7 +87,6 @@ module.exports = function(rs, message, api){
     return new rs.Promise(function (resolve, reject) {
       var i = 0;
       updateFiles()
-      .then(getSavedMessages)
       .then(getData)
       .then(() => resolve("Updated!"))
       .catch(err => console.error(err));
@@ -130,93 +128,65 @@ module.exports = function(rs, message, api){
 
   function saveMessage(rs, args){
     return new rs.Promise(function (resolve, reject) {
-      var timestamp = message.timestamp;
-      api.getThreadHistory(message.threadID, 2, timestamp,(err, history) => {
-        saveMessage = history[1];
-        var messageName = args.join(" ");
-        if(nameTaken(messageName)){
-          resolve("Sorry that name is taken!");
-        }else{
-          saved_messages.push({body : saveMessage.body,
-                                name : [messageName],
-                                threadID : saveMessage.threadID});
-          saveMessages();
-          api.setMessageReaction(":wow:", saveMessage.messageID);
-          printToLog(saveMessage.body + " saved under " + messageName);
-          resolve("Saved under " + messageName);
+      var timestamp = undefined;
+      api.getThreadHistory(message.threadID, 2, timestamp, function(err, hist){
+        if(err){
+          console.error(err);
+          reject(err);
         }
+        console.log(hist);
+        saveMessage = hist[0];
+        var messageName = args.join(" ");
+        db.addMessage(messageName, saveMessage.body, message.threadID);
+        api.setMessageReaction(":wow:", saveMessage.messageID);
+        printToLog(saveMessage.body + " saved under " + messageName);
+        resolve("Saved under " + messageName);
       });
     });
   }
 
-  function nameTaken(messageName){
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].name.indexOf(messageName) != -1){
-        return true;
-      }
-    }
-    return false;
-  }
-
   function recallMessage(rs, args){
-    var find = args.join(" ");
-    for (var i = 0; i < saved_messages.length; i++) {
-      if( saved_messages[i].name.indexOf(find) != -1 && saved_messages[i].threadID == message.threadID){
+    return new rs.Promise(function (resolve, reject) {
+      var find = args.join(" ");
+      db.getMessage(find, message.threadID).then((result) => {
         printToLog("Message found");
-        return(saved_messages[i].body);
-      }
-    }
+        resolve(result[0].body);
+      });
+    });
   }
   function deleteMessage(rs, args){
-    var find = args.join(" ");
-    var found = false;
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].name.indexOf(find) != -1 && saved_messages[i].threadID == message.threadID){
-        saved_messages.splice(i, 1);
-        found = true;
-      }
-    }
-    saveMessages();
-    if(found){
-      return("No worries, " + find + " is forgotten");
-    }
+    return new rs.Promise(function (resolve, reject) {
+      var find = args.join(" ");
+      db.deleteMessage(find, message.threadID).then(() => {
+        resolve("No worries, " + find + " is forgotten");
+      });
+    });
   }
 
   function listMessages(rs, args){
-    var text = "My saved messages:";
-    for (var i = 0; i < saved_messages.length; i++) {
-      if (saved_messages[i].threadID == message.threadID){
-        text = text + "\n" + saved_messages[i].name[0];
-      }
-    }
-    return(text);
-  }
+    return new rs.Promise(function (resolve, reject) {
+      var text = "My saved messages:";
+      db.getMessages(message.threadID).then((results) => {
+        for (var i = 0; i < results.length; i++) {
+          text = text + "\n" + results[i].name;
+        }
+        console.log(text);
+        resolve(text);
+      }).catch((err) => {
+        console.err(err);
+      });
+    });
 }
 
 //Gets data saved in a JSON file
 function getData(callback){
   return new Promise(function (resolve, reject) {
-  fs.readFile(saved_data_file, "utf8", function(err, data) {
+  fs.readFileSync(saved_data_file, "utf8", function(err, data) {
     bot_data = JSON.parse(data);
     printToLog("Updating options from JSON file, now on version " + bot_data.version)
     resolve();
   });
 });
-}
-
-//Gets messages saved in a JSON file
-function getSavedMessages(){
-  return new Promise(function (resolve, reject) {
-    fs.readFile(saved_messages_file, "utf8", function(err, data) {
-      saved_messages = JSON.parse(data);
-      printToLog("Updating messages from JSON file")
-      resolve();
-    });
-  });
-}
-//Saves messages to file
-function saveMessages(){
-  fs.writeFile(saved_messages_file, JSON.stringify(saved_messages, null, 2) , 'utf-8');
 }
 
 //Prints to logfile
@@ -225,5 +195,7 @@ function printToLog(txt){
   var date = new Date();
   var timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
   var string = "\n<li>" + timestamp + ": " + txt + "</li>" + "\n";
-  fs.appendFile(logFile, string);
+  fs.appendFileSync(logFile, string);
+}
+
 }

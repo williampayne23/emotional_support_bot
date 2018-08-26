@@ -101,5 +101,5 @@ function printToLog(txt){
   var date = new Date();
   var timestamp = date.toLocaleDateString() + " " +date.toLocaleTimeString();
   var string = "\n<li>" + timestamp + ": " + txt + "</li>" + "\n";
-  fs.appendFile(logFile, string);
+  fs.appendFileSync(logFile, string);
 }

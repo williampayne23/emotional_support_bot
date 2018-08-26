@@ -16,7 +16,7 @@ module.exports = function(message, api){
     }
     var text = stripMentions(rs, message);
     addVars(rs, message)
-    .then(() => rs.replyAsync(message.threadID, text))
+    .then(() => rs.reply(message.threadID, text))
     .then((reply) => {
       //Some subroutines send their own messages so the return NOMESSAGE so we know not to send one here.
       if(!/NOMESSAGE/.test(reply)){
@@ -82,12 +82,10 @@ function stripMentions(rs, message){
 }
 
 function updateFiles(){
-  rs.loadDirectory("brain", loadingDone, loadingError);
-  function loadingDone(batchnum){
+  rs.loadDirectory("brain").then(() => {
     rs.sortReplies();
     doneLoading = true;
-  }
-  function loadingError(err){
+  }).catch( (err, filename, linenum) => {
     console.error(err);
-  }
+  });
 }

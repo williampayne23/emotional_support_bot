@@ -14,7 +14,6 @@
     "lodash": "^4.17.10",
     "mysql": "^2.16.0",
     "rivescript": "^2.0.0-alpha.6",
-    "sqlite3": "^4.0.2",
     "swearjar": "^0.2.0"
   },
   "watch": [

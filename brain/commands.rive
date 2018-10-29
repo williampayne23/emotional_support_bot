@@ -1,9 +1,21 @@
 + * gif *
 - <call>gif <star1> <star2></call>
+
 + {weight=10}* gif
 - <call>gif <star></call>
+
 + {weight=10}gif *
 - <call>gif <star></call>
+
++ random
+- <call>randomgif</call>
+
++ get the [classic] * gif{weight=10}
+- <call>classicgif <star></call>
+
++ pirate
+- <call>classicgif pirate</call>
+
 
 + topic
 - <call>topic</call>
@@ -38,7 +50,10 @@
 + let us stop (chatting|talking|discussing)
 - <call>wait false</call>
 
-+ shush now
++ shush *
+- <call>wait false</call>
+
++ quiet *
 - <call>wait false</call>
 
 + stop listening
@@ -50,12 +65,12 @@
 + what is the (funny|life|love|students) [quote] [of the day]
 - <call>quote <star1></call>
 
++ what is the inspirational [quote] [of the day]
+- <call>quote inspire</call>
+
 + what are the quotes of the day
 - Funny : <call>quote funny</call>\n\n
 ^ Life : <call>quote life</call>\n\n
 ^ Love : <call>quote love</call>\n\n
 ^ Students : <call>quote students</call>\n\n
 ^ Inspirational : <call>quote inspire</call>
-
-+ what is the inspirational [quote] [of the day]
-- <call>quote inspire</call>

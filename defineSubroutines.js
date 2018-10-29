@@ -17,6 +17,8 @@ module.exports = function(rs, message, api){
   rs.setSubroutine('stopSpam', stopSpam);
   rs.setSubroutine('update', update);
   rs.setSubroutine('gif', getRelevantGif);
+  rs.setSubroutine('randomgif', getRandomGif)
+  rs.setSubroutine('classicgif', getClassicGif)
   rs.setSubroutine('save', saveMessage);
   rs.setSubroutine('recall', recallMessage);
   rs.setSubroutine('delete', deleteMessage);
@@ -70,13 +72,21 @@ module.exports = function(rs, message, api){
   }
 
   function spam(rs, args){
-    var mentions = rs.getUservar('local-user', 'mentions').split(" ");
-    //-1 to ignore the space at the end that I can't be bothered to more cleverly deal with.
-    for(var i=0; i < mentions.length-1; i++){
-      if(mentions[i] != config.bot_user_id){
-        global.spamBack = mentions[i];
-      }
-    }
+    return new rs.Promise(function(resolve, reject){
+      rs.getUservar(message.threadID, 'mentions').then((mentionsTxt) => {
+        var mentions = mentionsTxt.split(" ");
+        //-1 to ignore the space at the end that I can't be bothered to more cleverly deal with.
+        for(var i=0; i < mentions.length-1; i++){
+          if(mentions[i] != config.bot_user_id){
+            global.spamBack = mentions[i];
+          }
+        }
+        resolve("TIME TO SPAM")
+      }).catch((err) => {
+        reject("Uh oh...")
+      })
+  });
+
   }
 
   function stopSpam(){
@@ -123,6 +133,32 @@ module.exports = function(rs, message, api){
       })
       .then(response => api.sendMessage({attachment : response.data}, message.threadID))
       .catch(err => console.error(err))
+    });
+  }
+
+  function getRandomGif(rs, args){
+    return new rs.Promise(function (resolve, reject) {
+      var giphy_api = "https://api.giphy.com/v1/gifs/random"
+      giphy_api = giphy_api + "?api_key=" + config.giphy_api_key;
+      axios.get(giphy_api).then(res => {
+        var randomGif = res.data.data;
+        console.log(randomGif)
+        var gifUrl = randomGif.images.fixed_width.url;
+        return axios({method:'get', url: gifUrl, responseType:'stream'})
+      })
+      .then(response => api.sendMessage({attachment : response.data}, message.threadID))
+      .catch(err => console.error(err))
+    });
+  }
+
+  function getClassicGif(rs, args){
+    return new rs.Promise(function (resolve, reject) {
+      var giphy_api = "https://api.giphy.com/v1/gifs/random"
+      giphy_api = giphy_api + "?api_key=" + config.giphy_api_key;
+      var msg = {
+          attachment: fs.createReadStream('data/gifs/' + args.join('_') + '.gif')
+      }
+      api.sendMessage(msg, message.threadID)
     });
   }
 

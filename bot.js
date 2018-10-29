@@ -14,6 +14,8 @@ global.waitingforresponse = [];
 getData();
 attemptLogin();
 
+
+
 function attemptLogin(){
   try {
     //First try to log in with the saved state

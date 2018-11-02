@@ -8,7 +8,7 @@ updateFiles();
 module.exports = function(message, api) {
 
     defineSubroutines(rs, message, api);
-
+    console.log("RESPONDING")
     if (doneLoading) {
         var previousTopic = rs.getUservar(message.threadID, 'topic')
         if (previousTopic == 'undefined') {

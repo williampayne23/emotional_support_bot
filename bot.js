@@ -57,7 +57,7 @@ function loggedIn(err, api) {
     function listenForMessages(err, message) {
         if (err) return console.error(err);
         var body = message.body;
-        var thread = message.threadID
+
         if (!message.isGroup || global.waitingforresponse.indexOf(message.threadID) > -1) {
             speechHandler(message, api)
         } else if (bot_id in message.mentions) {
@@ -104,4 +104,5 @@ function printToLog(txt) {
     var timestamp = date.toLocaleDateString() + " " + date.toLocaleTimeString();
     var string = "\n<li>" + timestamp + ": " + txt + "</li>" + "\n";
     fs.appendFileSync(logFile, string);
+    console.log(txt);
 }

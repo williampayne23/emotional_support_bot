@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
     "facebook-chat-api": "^1.6.0",
     "lodash": "^4.17.10",
     "mysql": "^2.16.0",

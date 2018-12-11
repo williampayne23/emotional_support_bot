@@ -152,7 +152,7 @@
 ! person me      = you
 // Set arrays
 ! array malenoun   = male guy boy dude boi man men gentleman gentlemen
-! array femalenoun = female girl chick woman women lady babe
+! array femalenoun = female girl chick woman women lady babe boi
 ! array mennoun    = males guys boys dudes bois men gentlemen
 ! array womennoun  = females girls chicks women ladies babes
 ! array lol        = lol lmao rofl rotfl haha hahaha
@@ -161,7 +161,7 @@
 ! array measure    = inch in centimeter cm millimeter mm meter m inches centimeters millimeters meters
 ! array yes        = yes yeah yep yup ya yea
 ! array no         = no nah nope nay
-! array people     = me she he i her him youself
+! array people     = me she he i her him yourself
 ! array greetings  = hi hello greetings salutations bonjour chao
 ! array bot        = beast|girl|dog|doggo|computer program|agent|bot
 ! array compliments= good|great|functional|rational|artificially intelligent|effective

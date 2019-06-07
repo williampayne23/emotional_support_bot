@@ -1,3 +1,5 @@
 data
 .log.html
 config.js
+appstate.json
+node_modules/

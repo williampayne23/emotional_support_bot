@@ -6,7 +6,7 @@ First clone the repository
 ```
 git clone https://github.com/williampayne23/emotional_support_bot
 ```
-then edit the config.js file filling in the credentials and user ID. The user ID can be found by right clicking the bots account in the chat user list to the right of the main facebook page. The filename is the user ID.
+then copy the config-sample.js to the config.js file filling in the credentials and user ID. The user ID can be found by right clicking the bots account in the chat user list to the right of the main facebook page. The filename is the user ID.
 ```javascript
 credentials : {
   email: "PUT YOUR BOTS EMAIL ADDRESS HERE",
@@ -14,6 +14,8 @@ credentials : {
 },
 bot_user_id : 'PUT YOUR BOTS FACEBOOK USER ID HERE',
 ```
+We copy to a separate file here so credentials will never be pushed to github. 
+
 Install the required repositories with npm.
 ```shell
 npm install
